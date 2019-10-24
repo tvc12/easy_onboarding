@@ -1,7 +1,7 @@
 library easy_onboarding;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+
+part 'easy_onboarding_widget.dart';
