@@ -1,7 +1,7 @@
 part of easy_onboarding;
 
-class BottomToTopOnBoardingBuilder extends BaseOnBoardingWidgetBuilder {
-  BottomToTopOnBoardingBuilder({
+class _BottomToTopOnBoardingBuilder extends BaseOnBoardingWidgetBuilder {
+  _BottomToTopOnBoardingBuilder({
     @required EasyOnBoardingData onBoardingData,
     @required Widget child,
     @required Widget arrowWidget,

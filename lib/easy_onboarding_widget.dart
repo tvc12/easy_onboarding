@@ -1,5 +1,10 @@
 part of easy_onboarding;
 
+class EasyOnBoardingWidget extends BaseEasyOnBoardingWidget {
+  @override
+  BaseEasyOnBoardingState createState() => EasyOnBoardingState();
+}
+
 class EasyOnBoardingState extends BaseEasyOnBoardingState {
   @override
   Widget buildOnBoardingLayer(BuildContext context, GlobalKey currentKey) {
@@ -58,32 +63,6 @@ class EasyOnBoardingState extends BaseEasyOnBoardingState {
     );
   }
 
-  Widget _defaultLayout(
-    Widget widgetOnBoarding,
-    Widget arrowWidget,
-    Widget descriptionWidget,
-    Offset position,
-  ) {
-    final bool isTopToBottom = direction == EasyOnBoardingDirection.TopToBottom;
-    final BaseOnBoardingWidgetBuilder child = isTopToBottom
-        ? TopToBottomOnBoardingBuilder(
-            onBoardingData: widget.onBoardingData,
-            child: widgetOnBoarding,
-            arrowWidget: arrowWidget,
-            descriptionWidget: descriptionWidget,
-            position: position,
-          )
-        : BottomToTopOnBoardingBuilder(
-            onBoardingData: widget.onBoardingData,
-            child: widgetOnBoarding,
-            arrowWidget: arrowWidget,
-            descriptionWidget: descriptionWidget,
-            position: position,
-          );
-
-    return child;
-  }
-
   Offset getPosition(GlobalKey<State<StatefulWidget>> currentKey) {
     try {
       final RenderBox findRenderObject = currentKey.currentContext.findRenderObject();
@@ -94,57 +73,32 @@ class EasyOnBoardingState extends BaseEasyOnBoardingState {
       return null;
     }
   }
-}
 
-abstract class BaseOnBoardingWidgetBuilder extends StatelessWidget {
-  final Widget child;
-  final Widget arrowWidget;
-  final Widget descriptionWidget;
-  final Offset position;
-  final EasyOnBoardingData onBoardingData;
+  @override
+  Widget defaultBuilder(
+    BuildContext context,
+    Widget widgetOnBoarding,
+    Widget arrowWidget,
+    Widget descriptionWidget,
+    Offset position,
+  ) {
+    final bool isTopToBottom = direction == EasyOnBoardingDirection.TopToBottom;
+    final BaseOnBoardingWidgetBuilder child = isTopToBottom
+        ? _TopToBottomOnBoardingBuilder(
+            onBoardingData: widget.onBoardingData,
+            child: widgetOnBoarding,
+            arrowWidget: arrowWidget,
+            descriptionWidget: descriptionWidget,
+            position: position,
+          )
+        : _BottomToTopOnBoardingBuilder(
+            onBoardingData: widget.onBoardingData,
+            child: widgetOnBoarding,
+            arrowWidget: arrowWidget,
+            descriptionWidget: descriptionWidget,
+            position: position,
+          );
 
-  const BaseOnBoardingWidgetBuilder(
-    this.onBoardingData,
-    this.child,
-    this.arrowWidget,
-    this.descriptionWidget,
-    this.position, {
-    Key key,
-  }) : super(key: key);
-
-  Widget _onBoardingColumn({List<Widget> children = const <Widget>[]}) {
-    return Flex(
-      direction: Axis.vertical,
-      mainAxisAlignment: onBoardingData.mainAxisAlignment,
-      crossAxisAlignment: onBoardingData.crossAxisAlignment,
-      mainAxisSize: MainAxisSize.max,
-      children: children,
-    );
-  }
-
-  double _getPaddingRight(BuildContext context, double left) {
-    try {
-      final double childWidth = _getSizeWidget(onBoardingData.currentKey).width;
-      double width = MediaQuery.of(context).size.width;
-      return width - left - childWidth;
-    } catch (ex) {
-      return 0;
-    }
-  }
-
-  Size _getSizeWidget(GlobalKey<State<StatefulWidget>> currentKey) {
-    try {
-      final RenderBox findRenderObject = currentKey.currentContext.findRenderObject();
-
-      return findRenderObject.size;
-    } catch (ex) {
-      return Size.zero;
-    }
-  }
-
-  Widget _setDefaultSize(Widget child) {
-    return child is EasyOnBoardingObject
-        ? SizedBox.fromSize(child: child, size: _getSizeWidget(onBoardingData.currentKey))
-        : child;
+    return child;
   }
 }

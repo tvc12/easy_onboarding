@@ -1,46 +1,5 @@
 part of easy_onboarding;
 
-abstract class EasyOnBoardingObject extends Widget {
-  /// Clone object, remove global key because flutter don't allow two key same time
-  Widget cloneWithoutGlobalKey();
-}
-
-enum EasyOnBoardingDirection {
-  ///Component layout:
-  ///
-  /// **Description**
-  ///
-  ///     |
-  ///
-  /// **Arrow**
-  ///
-  ///     |
-  ///
-  /// **Widget**
-  TopToBottom,
-
-  ///Component layout:
-  ///
-  /// **Widget**
-  ///
-  ///     |
-  ///
-  /// **Arrow**
-  ///
-  ///     |
-  ///
-  /// **Description**
-  BottomToTop,
-}
-
-typedef EasyOnBoardingBuilder = Widget Function(
-  BuildContext context,
-  Widget child,
-  Widget arrowWidget,
-  Widget toolTipWidget,
-  Offset position,
-);
-
 abstract class BaseEasyOnBoardingWidget extends StatefulWidget {
   final Duration timeShowTooltips;
   final EasyOnBoardingBuilder builder;
@@ -68,7 +27,7 @@ abstract class BaseEasyOnBoardingWidget extends StatefulWidget {
 }
 
 abstract class BaseEasyOnBoardingState extends State<BaseEasyOnBoardingWidget> {
-  EasyOnBoardingBuilder get builder => widget.builder;
+  EasyOnBoardingBuilder get builder => widget.builder ?? defaultBuilder;
 
   GlobalKey get currentKey => widget.onBoardingData.currentKey;
 
@@ -131,6 +90,9 @@ abstract class BaseEasyOnBoardingState extends State<BaseEasyOnBoardingWidget> {
   }
 
   Widget buildOnBoardingLayer(BuildContext context, GlobalKey currentKey);
+
+  Widget defaultBuilder(
+      BuildContext context, Widget child, Widget arrowWidget, Widget toolTipWidget, Offset position);
 
   void onTapCancel() {
     Navigator.of(context).pop();
