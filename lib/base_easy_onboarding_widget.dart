@@ -68,10 +68,16 @@ abstract class BaseEasyOnBoardingWidget extends StatefulWidget {
 }
 
 abstract class BaseEasyOnBoardingState extends State<BaseEasyOnBoardingWidget> {
+  EasyOnBoardingBuilder get builder => widget.builder;
 
   GlobalKey get currentKey => widget.onBoardingData.currentKey;
+
   String get description => widget.onBoardingData.description;
+
+  EasyOnBoardingDirection get direction => widget.onBoardingData.direction;
+
   CrossAxisAlignment get crossAxisAlignment => widget.onBoardingData.crossAxisAlignment;
+
   MainAxisAlignment get mainAxisAlignment => widget.onBoardingData.mainAxisAlignment;
 
   bool showOnBoarding = false;

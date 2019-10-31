@@ -1,19 +1,13 @@
 part of easy_onboarding;
 
 class EasyOnBoardingState extends BaseEasyOnBoardingState {
-  EasyOnBoardingBuilder get builder => widget.builder;
-
-  EasyOnBoardingDirection get direction => widget.direction;
-
   @override
   Widget buildOnBoardingLayer(BuildContext context, GlobalKey currentKey) {
     final Widget child = _getOnBoardingWidget(currentKey);
     final Offset point = getPosition(currentKey) ?? Offset.zero;
     final Widget arrowWidget = buildArrow();
-    final Widget toolTipWidget = buildDescription(widget.description);
-    return child != null
-        ? builder(context, child, arrowWidget, toolTipWidget, point)
-        : SizedBox();
+    final Widget toolTipWidget = buildDescription(description);
+    return child != null ? builder(context, child, arrowWidget, toolTipWidget, point) : SizedBox();
   }
 
   Widget buildArrow() {
@@ -71,67 +65,28 @@ class EasyOnBoardingState extends BaseEasyOnBoardingState {
     Offset position,
   ) {
     final bool isTopToBottom = direction == EasyOnBoardingDirection.TopToBottom;
-    final EasyOnBoardingBuilder builder =
-        isTopToBottom ? _topToBottomBuilder : _bottomToTopBuilder;
+    final BaseOnBoardingWidgetBuilder child = isTopToBottom
+        ? TopToBottomOnBoardingBuilder(
+            onBoardingData: widget.onBoardingData,
+            child: widgetOnBoarding,
+            arrowWidget: arrowWidget,
+            descriptionWidget: descriptionWidget,
+            position: position,
+          )
+        : BottomToTopOnBoardingBuilder(
+            onBoardingData: widget.onBoardingData,
+            child: widgetOnBoarding,
+            arrowWidget: arrowWidget,
+            descriptionWidget: descriptionWidget,
+            position: position,
+          );
 
-    return widgetOnBoarding;
-  }
-
-  Widget _bottomToTopBuilder(
-    Widget child,
-    Widget arrowWidget,
-    Widget tooltipWiget,
-    Offset position,
-  ) {
-    final bool isLeft = widget.crossAxisAlignment == CrossAxisAlignment.start;
-    final double left = isLeft ? position.dx : null;
-    final double right = isLeft ? null : _getRight(position.dx);
-    Log.debug('_positionWidgetBottomToTop: RIGHT: $right, LEFT: $left');
-    final double bottom = _getBottom(position.dy);
-    child = Positioned(
-      top: position.dy,
-      left: left,
-      right: right,
-      child: _setDefaultSize(child),
-    );
-    final Widget newChild = Positioned(
-      bottom: bottom,
-      left: left,
-      right: right,
-      child: _defaultColumn([
-        tooltipWiget,
-        _rotateWidget(arrowWidget),
-      ]),
-    );
-    return Stack(
-      children: <Widget>[
-        child,
-        newChild,
-      ],
-    );
-  }
-
-  Widget _setDefaultSize(Widget child) {
-    return child is EasyOnBoardingObject
-        ? SizedBox.fromSize(child: child, size: getSize(widget.currentKey))
-        : child;
-  }
-
-  Size getSize(GlobalKey<State<StatefulWidget>> currentKey) {
-    try {
-      final RenderBox findRenderObject =
-          currentKey.currentContext.findRenderObject();
-
-      return findRenderObject.size;
-    } catch (ex) {
-      return Size.zero;
-    }
+    return child;
   }
 
   Offset getPosition(GlobalKey<State<StatefulWidget>> currentKey) {
     try {
-      final RenderBox findRenderObject =
-          currentKey.currentContext.findRenderObject();
+      final RenderBox findRenderObject = currentKey.currentContext.findRenderObject();
 
       return findRenderObject.localToGlobal(Offset.zero);
     } catch (ex) {
@@ -145,70 +100,51 @@ abstract class BaseOnBoardingWidgetBuilder extends StatelessWidget {
   final Widget child;
   final Widget arrowWidget;
   final Widget descriptionWidget;
-  final Offset offset;
+  final Offset position;
+  final EasyOnBoardingData onBoardingData;
 
   const BaseOnBoardingWidgetBuilder(
+    this.onBoardingData,
     this.child,
     this.arrowWidget,
     this.descriptionWidget,
-    this.offset, {
+    this.position, {
     Key key,
   }) : super(key: key);
 
-  Widget _defaultColumn(List<Widget> children) {
+  Widget _onBoardingColumn({List<Widget> children = const <Widget>[]}) {
     return Flex(
       direction: Axis.vertical,
-//      mainAxisAlignment: widget.mainAxisAlignment,
-//      crossAxisAlignment: widget.crossAxisAlignment,
+      mainAxisAlignment: onBoardingData.mainAxisAlignment,
+      crossAxisAlignment: onBoardingData.crossAxisAlignment,
       mainAxisSize: MainAxisSize.max,
       children: children,
     );
   }
-}
 
-class BottomToTopOnBoardingBuilder extends BaseOnBoardingWidgetBuilder {
-  BottomToTopOnBoardingBuilder({
-    @required Widget child,
-    @required Widget arrowWidget,
-    @required Widget descriptionWidget,
-    @required Offset offset,
-    Key key,
-  }) : super(child, arrowWidget, descriptionWidget, offset, key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final Widget widget =
-        _layoutTopToBottom(child, arrowWidget, descriptionWidget);
-    return _positionWidgetTopToBottom(child, offset);
+  double _getPaddingRight(BuildContext context, double left) {
+    try {
+      final double childWidth = _getSizeWidget(onBoardingData.currentKey).width;
+      double width = MediaQuery.of(context).size.width;
+      return width - left - childWidth;
+    } catch (ex) {
+      return 0;
+    }
   }
 
-  Widget _layoutTopToBottom(
-    Widget widgetOnBoarding,
-    Widget arrowWidget,
-    Widget descriptionWidget,
-  ) {
-    final Widget child = _setDefaultSize(widgetOnBoarding);
-    return _defaultColumn(
-      <Widget>[
-        _defaultColumn(<Widget>[child, arrowWidget]),
-        descriptionWidget,
-      ],
-    );
+  Size _getSizeWidget(GlobalKey<State<StatefulWidget>> currentKey) {
+    try {
+      final RenderBox findRenderObject = currentKey.currentContext.findRenderObject();
+
+      return findRenderObject.size;
+    } catch (ex) {
+      return Size.zero;
+    }
   }
 
-  Widget _positionWidgetTopToBottom(
-    Widget child,
-    Offset position,
-  ) {
-    final bool isLeft = widget.crossAxisAlignment == CrossAxisAlignment.start;
-    final double left = isLeft ? position.dx : null;
-    final double right = isLeft ? null : _getRight(position.dx);
-
-    return Positioned(
-      top: position.dy,
-      left: left,
-      right: right,
-      child: child,
-    );
+  Widget _setDefaultSize(Widget child) {
+    return child is EasyOnBoardingObject
+        ? SizedBox.fromSize(child: child, size: _getSizeWidget(onBoardingData.currentKey))
+        : child;
   }
 }
